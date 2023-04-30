@@ -36,6 +36,37 @@ app.post("/expense", async (req, res) => {
   await category.save();
   res.send({ category, expense });
 });
+app.put("/expense", async (req, res) => {
+  const expense = await Expense.findOneAndUpdate(
+    { title: req.body.expense },
+    { ...req.body }
+  );
+  console.log(req.body.expense);
+  console.log(expense);
+  const category = await Category.findOne({ title: req.body.category });
+  category.totalSpent += expense.moneySpent;
+  category.totalSpent > category.budget
+    ? (category.hasExceededBudget = true)
+    : (category.hasExceededBudget = false);
+  await expense.save();
+  await category.save();
+  res.send({ category, expense });
+});
+app.put("/category", async (req, res) => {
+  const category = await Category.findOneAndUpdate(
+    { title: req.body.category },
+    { ...req.body }
+  );  
+  res.send({ category });
+});
+app.delete("/expense", async (req, res) => {
+  await Expense.deleteOne({ title: req.expense });
+  res.send("successfully deleted expense");
+});
+app.delete("/category", async (req, res) => {
+  await Category.deleteOne({ title: req.category });
+  res.send("successfully deleted category");
+});
 app.listen(3000, (req, res) => {
   console.log("on port 3000");
 });
