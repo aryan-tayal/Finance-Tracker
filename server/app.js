@@ -18,6 +18,14 @@ db.once("open", () => {
 app.get("/", (req, res) => {
   res.send("home");
 });
+app.get("/category", async (req, res) => {
+  const category = await Category.find().populate("expenses");
+  res.send(category);
+});
+app.get("/expense/:id", async (req, res) => {
+  const expense = await Expense.findById(req.params.id);
+  res.send(expense);
+});
 app.post("/category", async (req, res) => {
   const category = new Category(req.body);
   await category.save();
@@ -56,7 +64,7 @@ app.put("/category", async (req, res) => {
   const category = await Category.findOneAndUpdate(
     { title: req.body.category },
     { ...req.body }
-  );  
+  );
   res.send({ category });
 });
 app.delete("/expense", async (req, res) => {
