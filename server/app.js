@@ -145,7 +145,18 @@ app.post("/register", async (req, res) => {
   });
   res.send(user);
 });
-
+app.put("/user/:id", async (req, res) => {
+  const user = await User.findByIdAndUpdate(
+    req.params.id,
+    { ...req.body },
+    { new: true }
+  );
+  res.send(user);
+});
+app.delete("/user/:id", async (req, res) => {
+  await User.findByIdAndDelete(req.params.id);
+  res.send("successfully deleted account");
+});
 app.listen(3000, (req, res) => {
   console.log("on port 3000");
 });
