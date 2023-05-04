@@ -59,6 +59,10 @@ passport.use(new LocalStrategy(User.authenticate()));
 app.get("/", (req, res) => {
   res.send("home");
 });
+app.get("/user/:id", async (req, res) => {
+  const user = await User.findById(req.params.id).populate("categories");
+  res.send(user);
+});
 app.get("/category/:id", async (req, res) => {
   const category = await Category.findById(req.params.id).populate("expenses");
   res.send(category);
@@ -69,7 +73,11 @@ app.get("/category/:id", async (req, res) => {
 // });
 app.post("/category", async (req, res) => {
   const category = new Category(req.body);
+  const user = await User.findById(req.user._id);
+  category.user = user._id;
+  user.category.push(user);
   await category.save();
+  await user.save();
   res.send(category);
 });
 app.post("/category/:id/expense", async (req, res) => {
