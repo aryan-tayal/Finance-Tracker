@@ -3,17 +3,58 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const Category = require("./models/category");
 const Expense = require("./models/expense");
+const User = require("./models/user");
 const app = express();
+const passport = require("passport");
+const session = require("express-session");
+const MongoDBStore = require("connect-mongo");
+
+const LocalStrategy = require("passport-local");
 
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
-mongoose.connect("mongodb://127.0.0.1:27017/financetracker");
+
+const dbUrl = "mongodb://127.0.0.1:27017/financetracker";
+
+mongoose.connect(dbUrl);
 
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));
 db.once("open", () => {
   console.log("Database connected");
 });
+const secret = "thisshouldbeabettersecret";
+const store = MongoDBStore.create({
+  mongoUrl: dbUrl,
+  secret: secret,
+  touchAfter: 24 * 60 * 60,
+});
+
+store.on("error", function (e) {
+  console.log("Session error", e);
+});
+
+const sessionConfig = {
+  store,
+  name: "session",
+  secret: secret,
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    httpOnly: true,
+    // secure:true,
+    expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+  },
+};
+
+app.use(session(sessionConfig));
+
+app.use(passport.initialize());
+app.use(passport.session());
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+passport.use(new LocalStrategy(User.authenticate()));
 
 app.get("/", (req, res) => {
   res.send("home");
@@ -82,6 +123,19 @@ app.delete("/category/:id/expense/:expenseId", async (req, res) => {
 app.delete("/category/:id", async (req, res) => {
   await Category.findByIdAndDelete(req.params.id);
   res.send("successfully deleted category");
+});
+
+app.post("/register", async (req, res) => {
+  const { email, username, password } = req.body;
+  const user = new User({ username, email });
+  const registeredUser = await User.register(user, password);
+  req.login(registeredUser, (err) => {
+    if (err) {
+      console.log("ERROR ! ", err);
+      res.send(err);
+    }
+  });
+  res.send(user);
 });
 
 app.listen(3000, (req, res) => {
