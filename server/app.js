@@ -18,24 +18,23 @@ db.once("open", () => {
 app.get("/", (req, res) => {
   res.send("home");
 });
-app.get("/category", async (req, res) => {
-  const category = await Category.find().populate("expenses");
+app.get("/category/:id", async (req, res) => {
+  const category = await Category.findById(req.params.id).populate("expenses");
   res.send(category);
 });
-app.get("/expense/:id", async (req, res) => {
-  const expense = await Expense.findById(req.params.id);
-  res.send(expense);
-});
+// app.get("/category/:id/expense/:categoryId", async (req, res) => {
+//   const expense = await Expense.findById(req.params.id);
+//   res.send(expense);
+// });
 app.post("/category", async (req, res) => {
   const category = new Category(req.body);
   await category.save();
   res.send(category);
 });
-app.post("/expense", async (req, res) => {
+app.post("/category/:id/expense", async (req, res) => {
   const expense = new Expense(req.body);
-  const category = await Category.findOne({ title: req.body.category });
+  const category = await Category.findById(req.params.id);
   category.expenses.push(expense);
-  console.log(expense);
   category.totalSpent += expense.moneySpent;
   category.totalSpent > category.budget
     ? (category.hasExceededBudget = true)
@@ -44,37 +43,47 @@ app.post("/expense", async (req, res) => {
   await category.save();
   res.send({ category, expense });
 });
-app.put("/expense", async (req, res) => {
-  const expense = await Expense.findOneAndUpdate(
-    { title: req.body.expense },
-    { ...req.body }
-  );
-  console.log(req.body.expense);
-  console.log(expense);
-  const category = await Category.findOne({ title: req.body.category });
-  category.totalSpent += expense.moneySpent;
-  category.totalSpent > category.budget
-    ? (category.hasExceededBudget = true)
-    : (category.hasExceededBudget = false);
-  await expense.save();
-  await category.save();
-  res.send({ category, expense });
-});
-app.put("/category", async (req, res) => {
-  const category = await Category.findOneAndUpdate(
-    { title: req.body.category },
-    { ...req.body }
+
+app.put("/category/:id", async (req, res) => {
+  const category = await Category.findByIdAndUpdate(
+    req.params.id,
+    {
+      ...req.body,
+    },
+    { new: true }
   );
   res.send({ category });
 });
-app.delete("/expense", async (req, res) => {
-  await Expense.deleteOne({ title: req.expense });
+app.put("/category/:id/expense/:expenseId", async (req, res) => {
+  const expense = await Expense.findByIdAndUpdate(
+    req.params.expenseId,
+    {
+      ...req.body,
+    },
+    { new: true }
+  );
+  const category = await Category.findById(req.params.id);
+  category.totalSpent += expense.moneySpent;
+  category.totalSpent > category.budget
+    ? (category.hasExceededBudget = true)
+    : (category.hasExceededBudget = false);
+  await expense.save();
+  await category.save();
+  res.send({ category, expense });
+});
+
+app.delete("/category/:id/expense/:expenseId", async (req, res) => {
+  await Category.findByIdAndUpdate(req.params.id, {
+    $pull: { expenses: req.params.expenseId },
+  });
+  await Expense.findByIdAndDelete(req.params.expenseId);
   res.send("successfully deleted expense");
 });
-app.delete("/category", async (req, res) => {
-  await Category.deleteOne({ title: req.category });
+app.delete("/category/:id", async (req, res) => {
+  await Category.findByIdAndDelete(req.params.id);
   res.send("successfully deleted category");
 });
+
 app.listen(3000, (req, res) => {
   console.log("on port 3000");
 });
