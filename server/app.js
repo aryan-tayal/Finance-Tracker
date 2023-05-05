@@ -11,6 +11,7 @@ const MongoDBStore = require("connect-mongo");
 
 const categoryRoutes = require("./routes/category");
 const expenseRoutes = require("./routes/expense");
+const userRoutes = require("./routes/user");
 
 const LocalStrategy = require("passport-local");
 
@@ -66,7 +67,7 @@ app.get("/", (req, res) => {
 
 app.use("/category", categoryRoutes);
 app.use("/category", expenseRoutes);
-
+app.use('/', userRoutes);
 
 app.get("/user/:id", async (req, res) => {
   const user = await User.findById(req.params.id).populate("categories");
@@ -142,43 +143,43 @@ app.get("/user/:id", async (req, res) => {
 //   res.send("successfully deleted category");
 // });
 
-app.post("/register", async (req, res) => {
-  const { email, username, password } = req.body;
-  const user = new User({ username, email });
-  const registeredUser = await User.register(user, password);
-  req.login(registeredUser, (err) => {
-    if (err) {
-      console.log("ERROR ! ", err);
-      res.send(err);
-    }
-  });
-  res.send(user);
-});
-app.post("/login", passport.authenticate("local"), async (req, res) => {
-  console.log(req.user);
-  res.send("successful");
-});
-app.post("/logout", async (req, res) => {
-  req.logout((err) => {
-    if (err) {
-      console.log("ERROR ! ", err);
-      res.send(err);
-    }
-  });
-  res.send("successfully logged out");
-});
-app.put("/user/:id", async (req, res) => {
-  const user = await User.findByIdAndUpdate(
-    req.params.id,
-    { ...req.body },
-    { new: true }
-  );
-  res.send(user);
-});
-app.delete("/user/:id", async (req, res) => {
-  await User.findByIdAndDelete(req.params.id);
-  res.send("successfully deleted account");
-});
+// app.post("/register", async (req, res) => {
+//   const { email, username, password } = req.body;
+//   const user = new User({ username, email });
+//   const registeredUser = await User.register(user, password);
+//   req.login(registeredUser, (err) => {
+//     if (err) {
+//       console.log("ERROR ! ", err);
+//       res.send(err);
+//     }
+//   });
+//   res.send(user);
+// });
+// app.post("/login", passport.authenticate("local"), async (req, res) => {
+//   console.log(req.user);
+//   res.send("successful");
+// });
+// app.post("/logout", async (req, res) => {
+//   req.logout((err) => {
+//     if (err) {
+//       console.log("ERROR ! ", err);
+//       res.send(err);
+//     }
+//   });
+//   res.send("successfully logged out");
+// });
+// app.put("/user/:id", async (req, res) => {
+//   const user = await User.findByIdAndUpdate(
+//     req.params.id,
+//     { ...req.body },
+//     { new: true }
+//   );
+//   res.send(user);
+// });
+// app.delete("/user/:id", async (req, res) => {
+//   await User.findByIdAndDelete(req.params.id);
+//   res.send("successfully deleted account");
+// });
 app.listen(3000, (req, res) => {
   console.log("on port 3000");
 });
