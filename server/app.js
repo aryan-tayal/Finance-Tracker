@@ -9,6 +9,8 @@ const passport = require("passport");
 const session = require("express-session");
 const MongoDBStore = require("connect-mongo");
 
+const categoryRoutes = require("./routes/category");
+
 const LocalStrategy = require("passport-local");
 
 app.use(cors());
@@ -56,6 +58,8 @@ passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 passport.use(new LocalStrategy(User.authenticate()));
 
+app.use("/category", categoryRoutes);
+
 app.get("/", (req, res) => {
   console.log(req.user);
   res.send("home");
@@ -64,23 +68,23 @@ app.get("/user/:id", async (req, res) => {
   const user = await User.findById(req.params.id).populate("categories");
   res.send(user);
 });
-app.get("/category/:id", async (req, res) => {
-  const category = await Category.findById(req.params.id).populate("expenses");
-  res.send(category);
-});
+// app.get("/category/:id", async (req, res) => {
+//   const category = await Category.findById(req.params.id).populate("expenses");
+//   res.send(category);
+// });
 // app.get("/category/:id/expense/:categoryId", async (req, res) => {
 //   const expense = await Expense.findById(req.params.id);
 //   res.send(expense);
 // });
-app.post("/category", async (req, res) => {
-  const category = new Category(req.body);
-  const user = await User.findById(req.user._id);
-  category.user = user._id;
-  user.category.push(user);
-  await category.save();
-  await user.save();
-  res.send(category);
-});
+// app.post("/category", async (req, res) => {
+//   const category = new Category(req.body);
+//   const user = await User.findById(req.user._id);
+//   category.user = user._id;
+//   user.category.push(user);
+//   await category.save();
+//   await user.save();
+//   res.send(category);
+// });
 app.post("/category/:id/expense", async (req, res) => {
   const expense = new Expense(req.body);
   const category = await Category.findById(req.params.id);
@@ -94,16 +98,16 @@ app.post("/category/:id/expense", async (req, res) => {
   res.send({ category, expense });
 });
 
-app.put("/category/:id", async (req, res) => {
-  const category = await Category.findByIdAndUpdate(
-    req.params.id,
-    {
-      ...req.body,
-    },
-    { new: true }
-  );
-  res.send({ category });
-});
+// app.put("/category/:id", async (req, res) => {
+//   const category = await Category.findByIdAndUpdate(
+//     req.params.id,
+//     {
+//       ...req.body,
+//     },
+//     { new: true }
+//   );
+//   res.send({ category });
+// });
 app.put("/category/:id/expense/:expenseId", async (req, res) => {
   const expense = await Expense.findByIdAndUpdate(
     req.params.expenseId,
@@ -129,10 +133,10 @@ app.delete("/category/:id/expense/:expenseId", async (req, res) => {
   await Expense.findByIdAndDelete(req.params.expenseId);
   res.send("successfully deleted expense");
 });
-app.delete("/category/:id", async (req, res) => {
-  await Category.findByIdAndDelete(req.params.id);
-  res.send("successfully deleted category");
-});
+// app.delete("/category/:id", async (req, res) => {
+//   await Category.findByIdAndDelete(req.params.id);
+//   res.send("successfully deleted category");
+// });
 
 app.post("/register", async (req, res) => {
   const { email, username, password } = req.body;
