@@ -57,6 +57,7 @@ passport.deserializeUser(User.deserializeUser());
 passport.use(new LocalStrategy(User.authenticate()));
 
 app.get("/", (req, res) => {
+  console.log(req.user);
   res.send("home");
 });
 app.get("/user/:id", async (req, res) => {
@@ -144,6 +145,19 @@ app.post("/register", async (req, res) => {
     }
   });
   res.send(user);
+});
+app.post("/login", passport.authenticate("local"), async (req, res) => {
+  console.log(req.user);
+  res.send("successful");
+});
+app.post("/logout", async (req, res) => {
+  req.logout((err) => {
+    if (err) {
+      console.log("ERROR ! ", err);
+      res.send(err);
+    }
+  });
+  res.send("successfully logged out");
 });
 app.put("/user/:id", async (req, res) => {
   const user = await User.findByIdAndUpdate(
