@@ -10,6 +10,7 @@ const session = require("express-session");
 const MongoDBStore = require("connect-mongo");
 
 const categoryRoutes = require("./routes/category");
+const expenseRoutes = require("./routes/expense");
 
 const LocalStrategy = require("passport-local");
 
@@ -58,12 +59,15 @@ passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 passport.use(new LocalStrategy(User.authenticate()));
 
-app.use("/category", categoryRoutes);
-
 app.get("/", (req, res) => {
   console.log(req.user);
   res.send("home");
 });
+
+app.use("/category", categoryRoutes);
+app.use("/category", expenseRoutes);
+
+
 app.get("/user/:id", async (req, res) => {
   const user = await User.findById(req.params.id).populate("categories");
   res.send(user);
@@ -85,18 +89,18 @@ app.get("/user/:id", async (req, res) => {
 //   await user.save();
 //   res.send(category);
 // });
-app.post("/category/:id/expense", async (req, res) => {
-  const expense = new Expense(req.body);
-  const category = await Category.findById(req.params.id);
-  category.expenses.push(expense);
-  category.totalSpent += expense.moneySpent;
-  category.totalSpent > category.budget
-    ? (category.hasExceededBudget = true)
-    : (category.hasExceededBudget = false);
-  await expense.save();
-  await category.save();
-  res.send({ category, expense });
-});
+// app.post("/category/:id/expense", async (req, res) => {
+//   const expense = new Expense(req.body);
+//   const category = await Category.findById(req.params.id);
+//   category.expenses.push(expense);
+//   category.totalSpent += expense.moneySpent;
+//   category.totalSpent > category.budget
+//     ? (category.hasExceededBudget = true)
+//     : (category.hasExceededBudget = false);
+//   await expense.save();
+//   await category.save();
+//   res.send({ category, expense });
+// });
 
 // app.put("/category/:id", async (req, res) => {
 //   const category = await Category.findByIdAndUpdate(
@@ -108,31 +112,31 @@ app.post("/category/:id/expense", async (req, res) => {
 //   );
 //   res.send({ category });
 // });
-app.put("/category/:id/expense/:expenseId", async (req, res) => {
-  const expense = await Expense.findByIdAndUpdate(
-    req.params.expenseId,
-    {
-      ...req.body,
-    },
-    { new: true }
-  );
-  const category = await Category.findById(req.params.id);
-  category.totalSpent += expense.moneySpent;
-  category.totalSpent > category.budget
-    ? (category.hasExceededBudget = true)
-    : (category.hasExceededBudget = false);
-  await expense.save();
-  await category.save();
-  res.send({ category, expense });
-});
+// app.put("/category/:id/expense/:expenseId", async (req, res) => {
+//   const expense = await Expense.findByIdAndUpdate(
+//     req.params.expenseId,
+//     {
+//       ...req.body,
+//     },
+//     { new: true }
+//   );
+//   const category = await Category.findById(req.params.id);
+//   category.totalSpent += expense.moneySpent;
+//   category.totalSpent > category.budget
+//     ? (category.hasExceededBudget = true)
+//     : (category.hasExceededBudget = false);
+//   await expense.save();
+//   await category.save();
+//   res.send({ category, expense });
+// });
 
-app.delete("/category/:id/expense/:expenseId", async (req, res) => {
-  await Category.findByIdAndUpdate(req.params.id, {
-    $pull: { expenses: req.params.expenseId },
-  });
-  await Expense.findByIdAndDelete(req.params.expenseId);
-  res.send("successfully deleted expense");
-});
+// app.delete("/category/:id/expense/:expenseId", async (req, res) => {
+//   await Category.findByIdAndUpdate(req.params.id, {
+//     $pull: { expenses: req.params.expenseId },
+//   });
+//   await Expense.findByIdAndDelete(req.params.expenseId);
+//   res.send("successfully deleted expense");
+// });
 // app.delete("/category/:id", async (req, res) => {
 //   await Category.findByIdAndDelete(req.params.id);
 //   res.send("successfully deleted category");
