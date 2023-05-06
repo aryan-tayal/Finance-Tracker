@@ -4,8 +4,9 @@ const router = express.Router();
 const Expense = require("../models/expense");
 const Category = require("../models/category");
 
-router.post("/:id/expense/", async (req, res) => {
+router.post("/", async (req, res) => {
   const expense = new Expense(req.body);
+  console.log(req.params.id);
   const category = await Category.findById(req.params.id);
   category.expenses.push(expense);
   category.totalSpent += expense.moneySpent;
@@ -18,7 +19,7 @@ router.post("/:id/expense/", async (req, res) => {
 });
 
 router
-  .route("/:id/expense/:expenseId")
+  .route("/:expenseId")
   .put(async (req, res) => {
     const expense = await Expense.findByIdAndUpdate(
       req.params.expenseId,
@@ -27,6 +28,8 @@ router
       },
       { new: true }
     );
+    console.log(req.params.id);
+
     const category = await Category.findById(req.params.id);
     category.totalSpent += expense.moneySpent;
     category.totalSpent > category.budget

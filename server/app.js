@@ -1,11 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
-const Category = require("./models/category");
-const Expense = require("./models/expense");
 const User = require("./models/user");
 const app = express();
-const passport = require("passport");
 const session = require("express-session");
 const MongoDBStore = require("connect-mongo");
 
@@ -13,6 +10,7 @@ const categoryRoutes = require("./routes/category");
 const expenseRoutes = require("./routes/expense");
 const userRoutes = require("./routes/user");
 
+const passport = require("passport");
 const LocalStrategy = require("passport-local");
 
 app.use(cors());
@@ -65,8 +63,9 @@ app.get("/", (req, res) => {
   res.send("home");
 });
 
+app.use("/category/:id/expense", expenseRoutes);
 app.use("/category", categoryRoutes);
-app.use("/category", expenseRoutes);
+
 app.use("/", userRoutes);
 
 app.listen(3000, (req, res) => {
