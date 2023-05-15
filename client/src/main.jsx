@@ -11,8 +11,8 @@ import axios from "axios";
 import User from "./User.jsx";
 import Register from "./Register.jsx";
 
-const loader = async () => {
-  const { data } = await axios.get("http://localhost:3000/");
+const loader = async ({ request, params }) => {
+  const { data } = await axios.get(`http://localhost:3000/user/${params.id}`);
   return { data };
 };
 const action = async ({ request, params }) => {

@@ -33,11 +33,11 @@ router.post("/logout", async (req, res) => {
 });
 
 router
+  .route("/user/:id")
   .get(async (req, res) => {
     const user = await User.findById(req.params.id).populate("categories");
     res.send(user);
   })
-  .route("/user/:id")
   .put(async (req, res) => {
     const user = await User.findByIdAndUpdate(
       req.params.id,
