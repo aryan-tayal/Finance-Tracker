@@ -5,7 +5,7 @@ const User = require("./models/user");
 const app = express();
 const session = require("express-session");
 const MongoDBStore = require("connect-mongo");
-
+const bodyParser = require("body-parser");
 const categoryRoutes = require("./routes/category");
 const expenseRoutes = require("./routes/expense");
 const userRoutes = require("./routes/user");
@@ -15,7 +15,7 @@ const LocalStrategy = require("passport-local");
 
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
-
+app.use(bodyParser.json());
 const dbUrl = "mongodb://127.0.0.1:27017/financetracker";
 
 mongoose.connect(dbUrl);
@@ -59,7 +59,6 @@ passport.deserializeUser(User.deserializeUser());
 passport.use(new LocalStrategy(User.authenticate()));
 
 app.get("/", (req, res) => {
-  console.log(req.user);
   res.send("home");
 });
 
