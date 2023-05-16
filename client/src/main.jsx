@@ -23,12 +23,17 @@ const action = async ({ request, params }) => {
   console.log(data);
   return redirect(`/user/${data._id}`);
 };
+const deleteAction = async ({ request, params }) => {
+  await axios.delete(`http://localhost:3000/user/${params.id}`);
+  return redirect(`/`);
+};
 const router = createBrowserRouter([
   { path: "/", element: <App />, errorElement: <ErrorPage /> },
   {
     path: "/user/:id",
     element: <User />,
     loader: loader,
+    action: deleteAction,
     errorElement: <ErrorPage />,
   },
   {
